@@ -12,8 +12,9 @@ fn main(){
     println(fmt!("The random seed is: %?",v));
 
     let vstr = int::to_str(v);
-    let vbytes = vstr.as_bytes_with_null_consume();
-    let mut rng = rand::IsaacRng::new_seeded(vbytes);
+    let _vbytes = vstr.as_bytes_with_null_consume();
+//    let mut rng = rand::IsaacRng::new_seeded(_vbytes);
+    let mut rng = rand::XorShiftRng::new();
 
     let ls: ~[Lev] = do vec::from_fn(100) |_| {
         let rs = rooms(&mut rng, 99);
