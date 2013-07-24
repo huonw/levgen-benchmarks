@@ -1,9 +1,9 @@
 use std::rand::{Rng, RngUtil};
 use std::{rand, os, int, uint, vec};
 
-static TileDim: uint=50;
-static MinWid: uint=2;
-static MaxWid: uint=8;
+static TileDim: uint = 50;
+static MinWid: uint  = 2;
+static MaxWid: uint  = 8;
 
 fn main(){
     let args = os::args();
@@ -32,7 +32,7 @@ fn main(){
         Lev { TS: ts, RS: rs }
     };
     let BiggestLev = FindMostRooms(ls);
-    PrintLev(&ls[BiggestLev]);
+    PrintLev(BiggestLev);
 }
 
 struct Tile {
@@ -54,17 +54,10 @@ struct Lev {
     RS: ~[Room],
 }
 
-fn FindMostRooms(ls: &[Lev]) -> uint {
-    let mut max = 0;
-    let mut biggestLev = 0;
-    for ls.iter().enumerate().advance |(i,l)| {
-        let len = l.RS.len();
-        if len > max {
-            max = len;
-            biggestLev = i;
-        }
-    }
-    biggestLev
+fn FindMostRooms<'a>(ls: &'a [Lev]) -> &'a Lev {
+    do ls.iter().max_by |lev| {
+        lev.RS.len()
+    }.expect("oops, no levels")
 }
 
 fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
@@ -80,7 +73,7 @@ fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
         if NotCrash(x, y, w, h, rooms) {
             let r = Room { X: x, Y: y, W: w, H: h, N: rooms.len() };
             rooms.push(r);
-            if rooms.len() == 99 { break } // found a room, so start on the next one
+            if rooms.len() == n { break }
         }
     }
     rooms
