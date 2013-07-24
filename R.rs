@@ -5,7 +5,7 @@ static TileDim: uint = 50;
 static MinWid: uint  = 2;
 static MaxWid: uint  = 8;
 
-fn main(){
+fn main() {
     let args = os::args();
     let str = (args[1]);
     let v = int::from_str(str).get_or_default(18);
@@ -75,12 +75,11 @@ fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
         let y = rng.gen_uint_range(0, TileDim);
         let w = rng.gen_uint_range(MinWid, MaxWid);
         let h = rng.gen_uint_range(MinWid, MaxWid);
-        if x + w >= TileDim ||
-            y + h >= TileDim ||
-            x == 0 || y == 0 {
-            loop
-        }
-        if not_crash(x, y, w, h, rooms) {
+        if x + w < TileDim &&
+           y + h < TileDim &&
+           x != 0 &&
+           y != 0 &&
+           not_crash(x, y, w, h, rooms) {
             let r = Room { x: x, y: y, w: w, h: h, n: rooms.len() };
             rooms.push(r);
             if rooms.len() == n { break }
@@ -89,7 +88,7 @@ fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
     rooms
 }
 
-fn not_crash(new_x: uint, new_y: uint, new_w: uint, new_h: uint, rs: &[Room]) -> bool{
+fn not_crash(new_x: uint, new_y: uint, new_w: uint, new_h: uint, rs: &[Room]) -> bool {
     do rs.iter().all |r| {
         let Room { x, y, w, h, _ } = *r;
 
@@ -100,18 +99,18 @@ fn not_crash(new_x: uint, new_y: uint, new_w: uint, new_h: uint, rs: &[Room]) ->
     }
 }
 
-fn room_to_tiles(r: &Room, ts: &mut~[Tile]){
-    let Room { x, y, w, h, _} = *r;
+fn room_to_tiles(r: &Room, ts: &mut ~[Tile]) {
+    let Room { x, y, w, h, _ } = *r;
 
-    for uint:: range(y, y + h + 1) |yi| {
-        for uint:: range(x, x + w + 1) |xi| {
+    for uint::range(y, y + h + 1) |yi| {
+        for uint::range(x, x + w + 1) |xi| {
             let num = yi * TileDim + xi;
             ts[num].t = true;
         }
     }
 }
 
-fn print_lev(l: &Lev){
+fn print_lev(l: &Lev) {
     for l.tiles.iter().enumerate().advance |(i, tile)| {
         print(if tile.t {"1"} else {"0"});
         if i % TileDim == 49 {
