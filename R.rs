@@ -20,58 +20,60 @@ fn main(){
         let rs = rooms(&mut rng, 99);
         let mut ts: ~[Tile] = do vec::from_fn(TileDim * TileDim) |ii| {
             Tile {
-                X: ii % TileDim,
-                Y: ii / TileDim,
-                T: 0
+                x: ii % TileDim,
+                y: ii / TileDim,
+                t: false
             }
         };
 
         for rs.iter().advance |r| {
-            Room2Tiles(r, &mut ts);
+            room_to_tiles(r, &mut ts);
         }
-        Lev { TS: ts, RS: rs }
+        Lev { tiles: ts, rooms: rs }
     };
-    let BiggestLev = FindMostRooms(ls);
-    PrintLev(BiggestLev);
+    let biggest_lev = find_most_rooms(ls);
+    print_lev(biggest_lev);
 }
 
 struct Tile {
-    X: uint,
-    Y: uint,
-    T: uint,
+    x: uint,
+    y: uint,
+    t: bool
 }
 
 struct Room {
-    X: uint,
-    Y: uint,
-    W: uint,
-    H: uint,
-    N: uint
+    x: uint,
+    y: uint,
+    w: uint,
+    h: uint,
+    n: uint
 }
 
 struct Lev {
-    TS: ~[Tile],
-    RS: ~[Room],
+    tiles: ~[Tile],
+    rooms: ~[Room],
 }
 
-fn FindMostRooms<'a>(ls: &'a [Lev]) -> &'a Lev {
+fn find_most_rooms<'a>(ls: &'a [Lev]) -> &'a Lev {
     do ls.iter().max_by |lev| {
-        lev.RS.len()
+        lev.rooms.len()
     }.expect("oops, no levels")
 }
 
 fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
     let mut rooms = vec::with_capacity(n);
     for 50000.times {
-        let x = rng.gen_uint_range(0,TileDim);
-        let y = rng.gen_uint_range(0,TileDim);
-        let w = rng.gen_uint_range(MinWid,MaxWid);
-        let h = rng.gen_uint_range(MinWid,MaxWid);
-        if x+w>=TileDim || y+h>=TileDim || x==0 || y==0 {
+        let x = rng.gen_uint_range(0, TileDim);
+        let y = rng.gen_uint_range(0, TileDim);
+        let w = rng.gen_uint_range(MinWid, MaxWid);
+        let h = rng.gen_uint_range(MinWid, MaxWid);
+        if x + w >= TileDim ||
+            y + h >= TileDim ||
+            x == 0 || y == 0 {
             loop
         }
-        if NotCrash(x, y, w, h, rooms) {
-            let r = Room { X: x, Y: y, W: w, H: h, N: rooms.len() };
+        if not_crash(x, y, w, h, rooms) {
+            let r = Room { x: x, y: y, w: w, h: h, n: rooms.len() };
             rooms.push(r);
             if rooms.len() == n { break }
         }
@@ -79,31 +81,31 @@ fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
     rooms
 }
 
-fn NotCrash(x: uint, y: uint, w: uint, h: uint, rs: &[Room]) -> bool{
+fn not_crash(new_x: uint, new_y: uint, new_w: uint, new_h: uint, rs: &[Room]) -> bool{
     do rs.iter().all |r| {
-        let Room { X, Y, W, H, _ } = *r;
+        let Room { x, y, w, h, _ } = *r;
 
-        ((X + W + 1) < x ||
-         X > (x + w + 1) ||
-         (Y + H + 1) < y ||
-         Y > (y + h + 1))
+        ((x + w + 1) < new_x ||
+         x > (new_x + new_w + 1) ||
+         (y + h + 1) < new_y ||
+         y > (new_y + new_h + 1))
     }
 }
 
-fn Room2Tiles(r: &Room, ts: &mut~[Tile]){
-    let Room { X, Y, W, H, _} = *r;
+fn room_to_tiles(r: &Room, ts: &mut~[Tile]){
+    let Room { x, y, w, h, _} = *r;
 
-    for uint:: range(X, X + W + 1) |xi| {
-        for uint:: range(Y, Y + H + 1) |yi| {
-            let num= yi*TileDim+xi;
-            ts[num].T=1;
+    for uint:: range(x, x + w + 1) |xi| {
+        for uint:: range(y, y + h + 1) |yi| {
+            let num = yi * TileDim + xi;
+            ts[num].t = true;
         }
     }
 }
 
-fn PrintLev(l: &Lev){
-    for l.TS.iter().enumerate().advance |(i, tile)| {
-        print(tile.T.to_str());
+fn print_lev(l: &Lev){
+    for l.tiles.iter().enumerate().advance |(i, tile)| {
+        print(if tile.t {"1"} else {"0"});
         if i % TileDim == 49 {
             print("\n");
         }
