@@ -103,8 +103,8 @@ fn not_crash(new_x: uint, new_y: uint, new_w: uint, new_h: uint, rs: &[Room]) ->
 fn room_to_tiles(r: &Room, ts: &mut~[Tile]){
     let Room { x, y, w, h, _} = *r;
 
-    for uint:: range(x, x + w + 1) |xi| {
-        for uint:: range(y, y + h + 1) |yi| {
+    for uint:: range(y, y + h + 1) |yi| {
+        for uint:: range(x, x + w + 1) |xi| {
             let num = yi * TileDim + xi;
             ts[num].t = true;
         }
