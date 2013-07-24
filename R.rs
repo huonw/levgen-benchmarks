@@ -1,4 +1,4 @@
-use std::rand::RngUtil;
+use std::rand::{Rng, RngUtil};
 use std::{rand, os, int, uint, vec};
 
 static TileDim: uint=50;
@@ -15,14 +15,9 @@ fn main(){
     let vbytes = vstr.as_bytes_with_null_consume();
     let mut rng = rand::IsaacRng::new_seeded(vbytes);
 
-    let mut ls: ~[Lev] = ~[];
-    for 100.times {
-        let mut rs: ~[Room]= ~[];
-        for 50000.times {
-            MakeRoom(&mut rs, &mut rng);
-            if rs.len() == 99 { break }
-        }
-        let mut ts: ~[Tile] = do vec::from_fn(2500) |ii| {
+    let ls: ~[Lev] = do vec::from_fn(100) |_| {
+        let rs = rooms(&mut rng, 99);
+        let mut ts: ~[Tile] = do vec::from_fn(TileDim * TileDim) |ii| {
             Tile {
                 X: ii % TileDim,
                 Y: ii / TileDim,
@@ -33,9 +28,8 @@ fn main(){
         for rs.iter().advance |r| {
             Room2Tiles(r, &mut ts);
         }
-        let l = Lev { TS: ts, RS: rs };
-        ls.push(l);
-    }
+        Lev { TS: ts, RS: rs }
+    };
     let BiggestLev = FindMostRooms(ls);
     PrintLev(&ls[BiggestLev]);
 }
@@ -72,18 +66,23 @@ fn FindMostRooms(ls: &[Lev]) -> uint {
     biggestLev
 }
 
-fn MakeRoom(rs: &mut ~[Room],rng: &mut rand:: IsaacRng) {
-    let x = rng.gen_uint_range(0,TileDim);
-    let y = rng.gen_uint_range(0,TileDim);
-    let w = rng.gen_uint_range(MinWid,MaxWid);
-    let h = rng.gen_uint_range(MinWid,MaxWid);
-    if x+w>=TileDim || y+h>=TileDim || x==0 || y==0 {
-        return
+fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
+    let mut rooms = vec::with_capacity(n);
+    for 50000.times {
+        let x = rng.gen_uint_range(0,TileDim);
+        let y = rng.gen_uint_range(0,TileDim);
+        let w = rng.gen_uint_range(MinWid,MaxWid);
+        let h = rng.gen_uint_range(MinWid,MaxWid);
+        if x+w>=TileDim || y+h>=TileDim || x==0 || y==0 {
+            loop
+        }
+        if NotCrash(x, y, w, h, rooms) {
+            let r = Room { X: x, Y: y, W: w, H: h, N: rooms.len() };
+            rooms.push(r);
+            if rooms.len() == 99 { break } // found a room, so start on the next one
+        }
     }
-    if NotCrash(x, y, w, h, *rs) {
-        let r = Room { X: x, Y: y, W: w, H: h, N: rs.len() };
-        rs.push(r);
-    }
+    rooms
 }
 
 fn NotCrash(x: uint, y: uint, w: uint, h: uint, rs: &[Room]) -> bool{
