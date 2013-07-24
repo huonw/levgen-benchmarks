@@ -12,9 +12,17 @@ fn main(){
     println(fmt!("The random seed is: %?",v));
 
     let vstr = int::to_str(v);
-    let _vbytes = vstr.as_bytes_with_null_consume();
-//    let mut rng = rand::IsaacRng::new_seeded(_vbytes);
-    let mut rng = rand::XorShiftRng::new();
+    let vbytes = vstr.as_bytes_with_null_consume();
+//    let mut rng = rand::IsaacRng::new_seeded(vbytes);
+
+    let (a,b,c,d) = match vbytes {
+        [] => fail!("no seed"),
+        [a] => (a,a,a,a),
+        [a,b] => (a,b,a,b),
+        [a,b,c] => (a,b,c,a),
+        [a,b,c,d, .. _] => (a,b,c,d)
+    };
+    let mut rng = rand::XorShiftRng::new_seeded(a as u32,b as u32,c as u32,d as u32);
 
     let ls: ~[Lev] = do vec::from_fn(100) |_| {
         let rs = rooms(&mut rng, 99);
