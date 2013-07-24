@@ -63,12 +63,13 @@ fn find_most_rooms<'a>(ls: &'a [Lev]) -> &'a Lev {
 fn rooms<R: Rng>(rng: &mut R, n: uint) -> ~[Room] {
     let mut rooms = vec::with_capacity(n);
     for 50000.times {
-        let x = rng.gen_uint_range(1, TileDim);
-        let y = rng.gen_uint_range(1, TileDim);
+        let x = rng.gen_uint_range(0, TileDim);
+        let y = rng.gen_uint_range(0, TileDim);
         let w = rng.gen_uint_range(MinWid, MaxWid);
         let h = rng.gen_uint_range(MinWid, MaxWid);
         if x + w >= TileDim ||
-            y + h >= TileDim {
+            y + h >= TileDim ||
+            x == 0 || y == 0 {
             loop
         }
         if not_crash(x, y, w, h, rooms) {
